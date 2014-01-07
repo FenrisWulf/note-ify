@@ -1,0 +1,13 @@
+package postIt.model;
+
+
+public class PostItModel {
+
+	public PostItModel() {
+		start();
+	}
+
+	private void start() {
+	}
+
+}

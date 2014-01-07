@@ -1,0 +1,120 @@
+package postIt.view;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.ArrayList;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+
+import postIt.note.view.PostItNote;
+
+public class PostItView extends JFrame implements KeyListener {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8624308573128186916L;
+
+	private static final float MAX_OPACTIY = 0.5f;
+
+	private final int FADE_SPEED = 30000;
+
+	private boolean ctrlDown;
+
+	private boolean altDown;
+
+	private boolean nDown;
+
+	private IPostItViewToControllerAdapter adapter;
+
+	private ArrayList<PostItNote> postItList;
+
+	public PostItView(IPostItViewToControllerAdapter adapter) {
+		this.adapter = adapter;
+		postItList = new ArrayList<PostItNote>();
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		start();
+		addKeyListener(this);
+	}
+
+	private void start() {
+		setContentPane(_canvasPnl);
+		setUndecorated(true);
+		setOpacity(0.0f);
+		getContentPane().setBackground(Color.BLACK);
+
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		int width = (int) screenSize.getWidth();
+		int height = (int) screenSize.getHeight();
+		setBounds(0, 0, width, height);
+		this.setVisible(true);
+
+		fadeIn();
+	}
+
+	// Create a special panel with an overridden paintComponent method.
+	private JPanel _canvasPnl = new JPanel() {
+		private static final long serialVersionUID = 2;
+
+		public void paintComponent(Graphics g) {
+			super.paintComponent(g); // clear the panel and redo the background
+			adapter.update(g); // call back to the model to paint
+								// the
+			// sprites
+		}
+	};
+
+	private void fadeIn() {
+		for (int i = 0; i < FADE_SPEED; i++) {
+			setOpacity(1.0f * i / FADE_SPEED * MAX_OPACTIY);
+		}
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		if (e.getKeyCode() == 17) {
+			ctrlDown = true;
+		}
+		if (e.getKeyCode() == 18) {
+			altDown = true;
+		}
+		if (e.getKeyCode() == 78) {
+			nDown = true;
+		}
+		checkCreatePostIt();
+	}
+
+	private void checkCreatePostIt() {
+		if (ctrlDown && altDown && nDown) {
+			adapter.createPostIt();
+		}
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		if (e.getKeyCode() == 17) {
+			ctrlDown = false;
+		}
+		if (e.getKeyCode() == 18) {
+			altDown = false;
+		}
+		if (e.getKeyCode() == 78) {
+			nDown = false;
+		}
+		System.out.println(ctrlDown + " " + altDown + " " + nDown);
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void addPostIt(PostItNote newPostIt) {
+		repaint();
+	}
+}

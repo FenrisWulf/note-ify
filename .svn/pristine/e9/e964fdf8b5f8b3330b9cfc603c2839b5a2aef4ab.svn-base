@@ -1,0 +1,45 @@
+package postIt.controller;
+
+import java.awt.Graphics;
+
+import postIt.model.IPostItModelToControllerAdapter;
+import postIt.model.PostItModel;
+import postIt.note.NoteInfo;
+import postIt.view.IPostItViewToControllerAdapter;
+import postIt.view.PostItView;
+
+public class PostItController {
+	private PostItView view;
+	private PostItModel model;
+
+	public static void main(String args[]) {
+		PostItController ctrl = new PostItController();
+		ctrl.start();
+
+	}
+
+	private void start() {
+		model = new PostItModel(new IPostItModelToControllerAdapter() {
+
+			@Override
+			public void addPostIt(NoteInfo newPostIt) {
+				System.out.println(newPostIt);
+				view.addPostIt(newPostIt);
+			}
+		});
+		view = new PostItView(new IPostItViewToControllerAdapter() {
+
+			@Override
+			public void createPostIt() {
+				model.createPostIt();
+			}
+
+			@Override
+			public void update(Graphics g) {
+				model.update(g);
+			}
+
+		}, model.loadNotes());
+
+	}
+}

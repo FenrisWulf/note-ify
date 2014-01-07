@@ -1,0 +1,9 @@
+package postIt.model;
+
+import postIt.note.view.PostItNote;
+
+public interface IPostItModelToControllerAdapter {
+
+	public void addPostIt(PostItNote newPostIt);
+
+}

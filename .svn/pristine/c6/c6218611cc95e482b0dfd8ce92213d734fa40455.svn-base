@@ -1,0 +1,42 @@
+package postIt.view;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+
+import javax.swing.JFrame;
+
+public class PostItView extends JFrame {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8624308573128186916L;
+
+	private static final float MAX_OPACTIY = 0.5f;
+
+	private final int FADE_SPEED = 30000;
+
+	public PostItView() {
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		start();
+	}
+
+	private void start() {
+		setUndecorated(true);
+		setOpacity(0.0f);
+		getContentPane().setBackground(Color.BLACK);
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		int width = (int) screenSize.getWidth();
+		int height = (int) screenSize.getHeight();
+		setBounds(0, 0, width, height);
+		this.setVisible(true);
+
+		fadeIn();
+	}
+
+	private void fadeIn() {
+		for (int i = 0; i < FADE_SPEED; i++) {
+			setOpacity(1.0f * i / FADE_SPEED * MAX_OPACTIY);
+		}
+	}
+}

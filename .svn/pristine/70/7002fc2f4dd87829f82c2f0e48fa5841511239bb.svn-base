@@ -1,0 +1,30 @@
+package postIt.model;
+
+import java.awt.Graphics;
+
+import postIt.note.view.PostItNote;
+
+public class PostItModel {
+	IPostItModelToControllerAdapter adapter;
+	private Dispatcher dispatcher;
+
+	public PostItModel(IPostItModelToControllerAdapter adapter) {
+		this.adapter = adapter;
+		this.dispatcher = new Dispatcher();
+		start();
+	}
+
+	private void start() {
+	}
+
+	public void createPostIt() {
+		PostItNote newPostIt = new PostItNote();
+		dispatcher.addObserver(newPostIt);
+		adapter.addPostIt(newPostIt);
+
+	}
+
+	public void update(Graphics g) {
+		dispatcher.notifyAll(g);
+	}
+}

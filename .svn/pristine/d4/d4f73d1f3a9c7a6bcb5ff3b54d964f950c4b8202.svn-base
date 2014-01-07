@@ -1,0 +1,16 @@
+package postIt.note.controller;
+
+import postIt.note.view.PostItNote;
+
+public class PostItNoteController {
+	private PostItNote view;
+
+	public PostItNoteController() {
+		view = new PostItNote();
+	}
+
+	public PostItNote getView() {
+		return view;
+	}
+
+}

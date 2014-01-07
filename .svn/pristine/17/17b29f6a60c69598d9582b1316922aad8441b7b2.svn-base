@@ -1,0 +1,207 @@
+package postIt.view;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.util.ArrayList;
+
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+
+import postIt.note.view.PostItNote;
+
+public class PostItView extends JFrame implements KeyListener {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8624308573128186916L;
+
+	private static final float MAX_OPACTIY = 0.5f;
+
+	private final int FADE_SPEED = 30000;
+
+	private boolean ctrlDown;
+
+	private boolean altDown;
+
+	private boolean nDown;
+
+	private IPostItViewToControllerAdapter adapter;
+
+	private ArrayList<PostItNote> postItList;
+	private ArrayList<PostItNote> selectedPostItList;
+
+	private volatile int screenX = 0;
+	private volatile int screenY = 0;
+	private JPanel panel_1;
+
+	public PostItView(IPostItViewToControllerAdapter adapter) {
+		this.adapter = adapter;
+		postItList = new ArrayList<PostItNote>();
+		selectedPostItList = new ArrayList<PostItNote>();
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		start();
+
+	}
+
+	private void addListeners(JComponent component) {
+		// Code I copied from:
+		// http://stackoverflow.com/questions/874360/swing-creating-a-draggable-component
+
+		component.addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				screenX = e.getXOnScreen();
+				screenY = e.getYOnScreen();
+				selectedPostItList = new ArrayList<PostItNote>();
+				for (PostItNote note : postItList) {
+					System.out.println("ScreenX " + screenX + " screenY "
+							+ screenY);
+					if (note.isInside(screenX, screenY)) {
+						selectedPostItList.add(note);
+					}
+				}
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+			}
+
+		});
+		component.addMouseMotionListener(new MouseMotionListener() {
+
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				int deltaX = e.getXOnScreen() - screenX;
+				int deltaY = e.getYOnScreen() - screenY;
+
+				for (PostItNote note : selectedPostItList) {
+					note.move(deltaX, deltaY);
+				}
+				repaint();
+
+				screenX = e.getXOnScreen();
+				screenY = e.getYOnScreen();
+			}
+
+			@Override
+			public void mouseMoved(MouseEvent e) {
+			}
+
+		});
+	}
+
+	private void start() {
+
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		int width = (int) screenSize.getWidth();
+		int height = (int) screenSize.getHeight();
+		setBounds(0, 0, width, height);
+		_canvasPnl.setLayout(new BorderLayout(0, 0));
+		setContentPane(_canvasPnl);
+
+		panel_1 = new JPanel();
+		_canvasPnl.add(panel_1, BorderLayout.CENTER);
+		panel_1.setLayout(null);
+		panel_1.setBackground(Color.BLACK);
+
+		_canvasPnl.setBounds(0, 0, width, height);
+		setUndecorated(true);
+		setOpacity(0.0f);
+
+		this.setVisible(true);
+		fadeIn();
+		addKeyListener(this);
+		addListeners(panel_1);
+
+	}
+
+	// Create a special panel with an overridden paintComponent method.
+	private JPanel _canvasPnl = new JPanel() {
+		private static final long serialVersionUID = 2;
+
+		public void paintComponent(Graphics g) {
+			super.paintComponent(g); // clear the panel and redo the background
+			adapter.update(g); // call back to the model to paint
+								// the
+			// sprites
+		}
+	};
+
+	private void fadeIn() {
+		for (int i = 0; i < FADE_SPEED; i++) {
+			setOpacity(1.0f * i / FADE_SPEED * MAX_OPACTIY);
+		}
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		System.out.println(e.getKeyCode());
+		if (e.getKeyCode() == 17) {
+			ctrlDown = true;
+		}
+		if (e.getKeyCode() == 18) {
+			altDown = true;
+		}
+		if (e.getKeyCode() == 78) {
+			nDown = true;
+		}
+		checkCreatePostIt();
+	}
+
+	private void checkCreatePostIt() {
+		if (ctrlDown && altDown && nDown) {
+			adapter.createPostIt();
+		}
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		if (e.getKeyCode() == 17) {
+			ctrlDown = false;
+		}
+		if (e.getKeyCode() == 18) {
+			altDown = false;
+		}
+		if (e.getKeyCode() == 78) {
+			nDown = false;
+		}
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void addPostIt(PostItNote newPostIt) {
+		panel_1.setVisible(true);
+		newPostIt.addKeyListener(this);
+		addListeners(newPostIt);
+		panel_1.add(newPostIt);
+		revalidate();
+		postItList.add(newPostIt);
+		repaint();
+	}
+}

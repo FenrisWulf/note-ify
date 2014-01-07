@@ -1,0 +1,11 @@
+package postIt.view;
+
+import java.awt.Graphics;
+
+public interface IPostItViewToControllerAdapter {
+
+	void createPostIt();
+
+	void update(Graphics g);
+
+}

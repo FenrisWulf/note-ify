@@ -1,0 +1,17 @@
+package postIt.controller;
+
+import postIt.view.PostItView;
+
+public class PostItController {
+	private PostItView view;
+
+	public static void main(String args[]) {
+		PostItController ctrl = new PostItController();
+		ctrl.start();
+
+	}
+
+	private void start() {
+		view = new PostItView();
+	}
+}

@@ -1,0 +1,16 @@
+package postIt.view;
+
+import java.awt.Graphics;
+import java.util.ArrayList;
+
+import postIt.note.dat.NoteInfo;
+
+public interface IPostItViewToControllerAdapter {
+
+	void createPostIt();
+
+	void update(Graphics g);
+
+	void saveData(ArrayList<NoteInfo> postItInfoList);
+
+}

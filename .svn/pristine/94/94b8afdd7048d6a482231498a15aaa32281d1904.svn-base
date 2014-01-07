@@ -1,0 +1,133 @@
+package postIt.note.view;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Point;
+
+import javax.swing.JComponent;
+import javax.swing.JInternalFrame;
+import javax.swing.JRootPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
+
+import postIt.note.dat.NoteInfo;
+
+public class PostItNote extends JInternalFrame {
+
+	/**
+	 *  
+	 */
+	private static final long serialVersionUID = 3159494906460844606L;
+	private static final int YELLOW = 0;
+	private static final int PINK = 1;
+	private static final int CYAN = 2;
+	private static final int ORANGE = 3;
+	private static final int WHITE = 4;
+	private int color;
+
+	private Point coordinate;
+
+	public int getColor() {
+		return color;
+	}
+
+	public void setColor(int color) {
+		this.color = color;
+	}
+
+	public Point getCoordinate() {
+		return getLocation();
+	}
+
+	public void setCoordinate(Point coordinate) {
+		this.coordinate = coordinate;
+	}
+
+	private JTextPane textPane;
+
+	public PostItNote(NoteInfo noteInfo) {
+		putClientProperty("JInternalFrame.isPalette", Boolean.TRUE);
+		getRootPane().setWindowDecorationStyle(JRootPane.NONE);
+		setResizable(true);
+
+		JScrollPane scrollPane = new JScrollPane();
+		getContentPane().add(scrollPane, BorderLayout.CENTER);
+
+		textPane = new JTextPane();
+		scrollPane.setViewportView(textPane);
+		setVisible(true);
+
+		color = noteInfo.getColor();
+		setBkgColor();
+
+		int width = noteInfo.getWidth();
+		int height = noteInfo.getHeight();
+		coordinate = new Point(noteInfo.getX(), noteInfo.getY());
+		setText(noteInfo.getText());
+		setLocation(coordinate);
+		setBounds(coordinate.x, coordinate.y, width, height);
+	}
+
+	public void setText(String text) {
+		textPane.setText(text);
+	}
+
+	public String getText() {
+		return textPane.getText();
+	}
+
+	private void setBkgColor() {
+		switch (color) {
+		case YELLOW:
+			textPane.setBackground(Color.YELLOW);
+			break;
+		case PINK:
+			textPane.setBackground(Color.PINK);
+			break;
+		case CYAN:
+			textPane.setBackground(Color.CYAN);
+			break;
+		case ORANGE:
+			textPane.setBackground(Color.ORANGE);
+			break;
+		case WHITE:
+			textPane.setBackground(Color.WHITE);
+			break;
+		default:
+			textPane.setBackground(Color.YELLOW);
+			color = YELLOW;
+		}
+	}
+
+	public void incrementColor() {
+		color++;
+		if (color > WHITE) {
+			color = YELLOW;
+		}
+		setBkgColor();
+	}
+
+	public void decrementColor() {
+		color--;
+		if (color < YELLOW) {
+			color = WHITE;
+		}
+		setBkgColor();
+	}
+
+	public boolean isInside(int x, int y) {
+		System.out.println("x " + x + " y " + y);
+		Point coordinate = getLocation();
+		int width = getWidth();
+		int height = getHeight();
+		if (coordinate.x <= x && coordinate.x + width >= x && coordinate.y <= y
+				&& coordinate.y + height >= y) {
+			return true;
+		}
+		return false;
+	}
+
+	public JComponent getTextPane() {
+		return textPane;
+	}
+}

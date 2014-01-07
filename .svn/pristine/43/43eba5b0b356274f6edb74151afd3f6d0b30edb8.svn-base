@@ -1,0 +1,15 @@
+package postIt.note.view;
+
+import postIt.note.NoteInfo;
+
+public class PostItFactory {
+	public static final PostItFactory factoryInstance = new PostItFactory();
+
+	private PostItFactory() {
+
+	}
+
+	public PostItNote make(NoteInfo info) {
+		return new PostItNote(info);
+	}
+}

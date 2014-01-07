@@ -1,0 +1,1 @@
+{"notes":[{"text":"Todo:\n*Step 1\n*Step 2\n*Step 3 \n*Step 4\n*Step 5","height":"300","color":"2","width":"300","y":"91","x":"1145"},{"text":"(555)-555-5555\r\n","height":"71","color":"0","width":"170","y":"337","x":"84"},{"text":"192.168.x.xxx\r\n192.168.1.x\r\n","height":"150","color":"4","width":"249","y":"671","x":"110"}]}

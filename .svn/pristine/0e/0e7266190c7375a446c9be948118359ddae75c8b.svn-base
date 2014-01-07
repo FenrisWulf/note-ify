@@ -1,0 +1,76 @@
+package postIt.note.view;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.util.Observable;
+import java.util.Observer;
+
+import javax.swing.JComponent;
+import javax.swing.JTextField;
+
+public class PostItNote extends JComponent implements Observer {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3159494906460844606L;
+	private Color color;
+	private Point coordinate;
+	private int width;
+	private int height;
+	private JTextField textField;
+
+	public PostItNote() {
+		textField = new JTextField("SomeText");
+
+		color = Color.RED;
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		int screenWidth = (int) screenSize.getWidth();
+		int screenHeight = (int) screenSize.getHeight();
+		coordinate = new Point((int) (Math.random() * screenWidth),
+				(int) (Math.random() * screenHeight));
+		width = 300;
+		height = 300;
+
+	}
+
+	@Override
+	protected void paintComponent(Graphics g) {
+		g.setColor(color);
+		g.fillRect(coordinate.x - width / 2, coordinate.y - height / 2, width,
+				height);
+
+		// g.setColor(Color.BLACK);
+		// g.drawString("Test Text", coordinate.x, coordinate.y);
+	}
+
+	@Override
+	public void update(Observable arg0, Object arg1) {
+		paintComponent((Graphics) arg1);
+	}
+
+	public void move(int deltaX, int deltaY) {
+		coordinate.setLocation(coordinate.x + deltaX, coordinate.y + deltaY);
+	}
+
+	public boolean contains(int x, int y) {
+		if (coordinate.x - width / 2 <= x && coordinate.x + width / 2 >= x
+				&& coordinate.y - height / 2 <= y
+				&& coordinate.y + height / 2 >= y) {
+			return true;
+		}
+		return false;
+	}
+
+	public JTextField getTextField() {
+		return textField;
+	}
+
+	public void setTextField(JTextField textField) {
+		this.textField = textField;
+	}
+
+}

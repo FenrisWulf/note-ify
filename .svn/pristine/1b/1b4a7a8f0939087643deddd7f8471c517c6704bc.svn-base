@@ -1,0 +1,20 @@
+package postIt.controller;
+
+import postIt.model.PostItModel;
+import postIt.view.PostItView;
+
+public class PostItController {
+	private PostItView view;
+	private PostItModel model;
+
+	public static void main(String args[]) {
+		PostItController ctrl = new PostItController();
+		ctrl.start();
+
+	}
+
+	private void start() {
+		view = new PostItView();
+		model = new PostItModel();
+	}
+}

@@ -1,0 +1,308 @@
+package postIt.view;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Toolkit;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLayeredPane;
+import javax.swing.JPanel;
+
+import postIt.note.NoteInfo;
+import postIt.note.PostItFactory;
+import postIt.note.view.PostItNote;
+
+public class PostItView extends JFrame implements KeyListener {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8624308573128186916L;
+
+	private static final float MAX_OPACTIY = 0.75f;
+
+	private final int FADE_SPEED = 8;
+
+	private boolean ctrlDown;
+
+	private boolean altDown;
+
+	private boolean nDown;
+	private boolean mDown;
+	private boolean rightDown;
+	private boolean leftDown;
+
+	private IPostItViewToControllerAdapter adapter;
+
+	private ArrayList<PostItNote> postItList;
+	private PostItNote selectedPostIt;
+
+	private volatile int screenX = 0;
+	private volatile int screenY = 0;
+	private JLayeredPane panel_1;
+	private PostItNote lastSelectedPostIt;
+
+	public PostItView(IPostItViewToControllerAdapter adapter,
+			ArrayList<NoteInfo> notes) {
+		this.adapter = adapter;
+		postItList = new ArrayList<PostItNote>();
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		start();
+		addNewPostIts(notes);
+
+	}
+
+	private void addNewPostIts(ArrayList<NoteInfo> notes) {
+		for (NoteInfo note : notes) {
+			addPostIt(note);
+		}
+	}
+
+	private void addListeners(JComponent component) {
+
+		component.addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if ((e.getModifiers() & InputEvent.BUTTON1_MASK) == InputEvent.BUTTON1_MASK) {
+					screenX = e.getXOnScreen();
+					screenY = e.getYOnScreen();
+					selectedPostIt = getSelectedPostIt(screenX, screenY);
+					if (selectedPostIt != null) {
+						lastSelectedPostIt = selectedPostIt;
+						panel_1.moveToFront(selectedPostIt);
+					}
+				}
+				if ((e.getModifiers() & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK) {
+					screenX = e.getXOnScreen();
+					screenY = e.getYOnScreen();
+					PostItNote note = getSelectedPostIt(screenX, screenY);
+					postItList.remove(note);
+					panel_1.remove(note);
+					invalidate();
+
+					repaint();
+
+				}
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				if ((e.getModifiers() & InputEvent.BUTTON1_MASK) == InputEvent.BUTTON1_MASK) {
+
+					selectedPostIt = null;
+				}
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+			}
+
+		});
+		component.addMouseMotionListener(new MouseMotionListener() {
+
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				if ((e.getModifiers() & InputEvent.BUTTON1_MASK) == InputEvent.BUTTON1_MASK) {
+					int deltaX = e.getXOnScreen() - screenX;
+					int deltaY = e.getYOnScreen() - screenY;
+					if (selectedPostIt != null) {
+						selectedPostIt.move(deltaX, deltaY);
+
+						repaint();
+					}
+					screenX = e.getXOnScreen();
+					screenY = e.getYOnScreen();
+
+				}
+			}
+
+			@Override
+			public void mouseMoved(MouseEvent e) {
+			}
+
+		});
+	}
+
+	protected PostItNote getSelectedPostIt(int x, int y) {
+		PostItNote result = null;
+		for (PostItNote note : postItList) {
+			if (note.isInside(x, y)) {
+				if (result == null
+						|| JLayeredPane.getLayer(result) < JLayeredPane
+								.getLayer(note)) {
+					result = note;
+				}
+			}
+		}
+		return result;
+	}
+
+	private void saveData() {
+		ArrayList<NoteInfo> postItInfoList = new ArrayList<NoteInfo>();
+		for (PostItNote note : postItList) {
+			postItInfoList.add(new NoteInfo(note.getText(), note
+					.getCoordinate().x, note.getCoordinate().y,
+					note.getWidth(), note.getHeight(), note.getColor()));
+		}
+		adapter.saveData(postItInfoList);
+	}
+
+	private void start() {
+		this.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				saveData();
+			}
+		});
+
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		int width = (int) screenSize.getWidth();
+		int height = (int) screenSize.getHeight();
+		setBounds(0, 0, width, height);
+		_canvasPnl.setLayout(new BorderLayout(0, 0));
+		setContentPane(_canvasPnl);
+
+		panel_1 = new JLayeredPane();
+		_canvasPnl.add(panel_1, BorderLayout.CENTER);
+		panel_1.setLayout(null);
+		_canvasPnl.setBackground(Color.BLACK);
+
+		_canvasPnl.setBounds(0, 0, width, height);
+		setUndecorated(true);
+
+		this.setVisible(true);
+		fadeIn();
+		addKeyListener(this);
+		addListeners(panel_1);
+
+	}
+
+	// Create a special panel with an overridden paintComponent method.
+	private JPanel _canvasPnl = new JPanel() {
+		private static final long serialVersionUID = 2;
+
+		public void paintComponent(Graphics g) {
+			super.paintComponent(g); // clear the panel and redo the background
+			adapter.update(g); // call back to the model to paint
+								// the
+			// sprites
+		}
+	};
+
+	private void fadeIn() {
+		for (int i = 0; i < FADE_SPEED; i++) {
+			setBackground(new Color(0, 0, 0, 1.0f * i / FADE_SPEED
+					* MAX_OPACTIY));
+		}
+
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		System.out.println(e.getKeyCode());
+		if (e.getKeyCode() == 17) {
+			ctrlDown = true;
+		}
+		if (e.getKeyCode() == 18) {
+			altDown = true;
+		}
+		if (e.getKeyCode() == 78) {
+			nDown = true;
+		}
+		if (e.getKeyCode() == 77) {
+			mDown = true;
+		}
+		if (e.getKeyCode() == 39) {
+			rightDown = true;
+		}
+		if (e.getKeyCode() == 37) {
+			leftDown = true;
+		}
+		checkChangeColor();
+		checkCreatePostIt();
+		checkClose();
+	}
+
+	private void checkClose() {
+		if (ctrlDown && mDown) {
+			saveData();
+			dispose();
+		}
+	}
+
+	private void checkChangeColor() {
+		if (altDown && rightDown) {
+			lastSelectedPostIt.incrementColor();
+		}
+		if (altDown && leftDown) {
+			lastSelectedPostIt.decrementColor();
+		}
+	}
+
+	private void checkCreatePostIt() {
+		if (ctrlDown && nDown) {
+			adapter.createPostIt();
+		}
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		if (e.getKeyCode() == 17) {
+			ctrlDown = false;
+		}
+		if (e.getKeyCode() == 18) {
+			altDown = false;
+		}
+		if (e.getKeyCode() == 77) {
+			mDown = false;
+		}
+		if (e.getKeyCode() == 78) {
+			nDown = false;
+		}
+		if (e.getKeyCode() == 39) {
+			rightDown = false;
+		}
+		if (e.getKeyCode() == 37) {
+			leftDown = false;
+		}
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+
+	}
+
+	public void addPostIt(NoteInfo newPostItInfo) {
+		PostItNote newPostIt = PostItFactory.factoryInstance
+				.make(newPostItInfo);
+		panel_1.setVisible(true);
+		newPostIt.addKeyListener(this);
+		addListeners(newPostIt);
+		panel_1.add(newPostIt);
+		revalidate();
+		postItList.add(newPostIt);
+		repaint();
+		newPostIt.requestFocusInWindow();
+
+	}
+}

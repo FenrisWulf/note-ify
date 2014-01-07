@@ -1,0 +1,140 @@
+package postIt.model;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import postIt.note.dat.NoteInfo;
+
+public class PostItModel {
+	/**
+	 * The adapter between the model and the controller
+	 */
+	IPostItModelToControllerAdapter adapter;
+
+	/**
+	 * The path where one saves/loads data from.
+	 */
+	private String filename;
+
+	public PostItModel(IPostItModelToControllerAdapter adapter) {
+		this.adapter = adapter;
+		URL location = getClass().getProtectionDomain().getCodeSource()
+				.getLocation();
+		filename = location.getPath() + "data.txt";
+
+		start();
+	}
+
+	/**
+	 * In this case, the model does not initally need to do anything at start
+	 * up. Keeping the method for potential changes to this in the future.
+	 */
+	private void start() {
+
+	}
+
+	/**
+	 * Reads the JSON information from the data.txt file and creates NoteInfo
+	 * instances from it.
+	 * 
+	 * @return A list of the notes.
+	 */
+	public ArrayList<NoteInfo> loadNotes() {
+		BufferedReader br = null;
+		StringBuilder input = new StringBuilder();
+		String st = null;
+
+		try {
+			br = new BufferedReader(new FileReader(filename));
+			try {
+				st = br.readLine();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		} catch (FileNotFoundException e) {
+			System.err.println("Filenot found");
+			st = null;
+		}
+
+		while (st != null) {
+			input.append(st);
+			try {
+				st = br.readLine();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		JSONObject parsedObject = new JSONObject(input.toString());
+		JSONArray noteJSONArray = parsedObject.getJSONArray("notes");
+		ArrayList<NoteInfo> loadedNotes = new ArrayList<NoteInfo>();
+		for (int i = 0; i < noteJSONArray.length(); i++) {
+			JSONObject noteJSON = noteJSONArray.getJSONObject(i);
+			loadedNotes.add(new NoteInfo(noteJSON.getString("text"), Integer
+					.parseInt(noteJSON.getString("x")), Integer
+					.parseInt(noteJSON.getString("y")), Integer
+					.parseInt(noteJSON.getString("width")), Integer
+					.parseInt(noteJSON.getString("height")), Integer
+					.parseInt(noteJSON.getString("color"))));
+		}
+		try {
+			br.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return loadedNotes;
+
+	}
+
+	/**
+	 * Creates a new post it instance, sends it through the adapter.
+	 */
+	public void createPostIt() {
+		NoteInfo newPostIt = new NoteInfo("", 300, 300, 300, 300, 300);
+		adapter.addPostIt(newPostIt);
+	}
+
+	/**
+	 * Saves all of the data from the postItInfoList and saves it in data.txt as
+	 * a JSON string
+	 * 
+	 * @param postItInfoList
+	 *            The list of all the note informations
+	 */
+	public void saveData(ArrayList<NoteInfo> postItInfoList) {
+		BufferedWriter writer = null;
+		try {
+			writer = new BufferedWriter(new FileWriter(filename));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		JSONObject objectToPrint = new JSONObject();
+		JSONArray jsonNoteArray = new JSONArray();
+		for (NoteInfo noteInfo : postItInfoList) {
+			JSONObject jsonNote = new JSONObject();
+			jsonNote.put("text", noteInfo.getText());
+			jsonNote.put("x", String.valueOf(noteInfo.getX()));
+			jsonNote.put("y", String.valueOf(noteInfo.getY()));
+			jsonNote.put("width", String.valueOf(noteInfo.getWidth()));
+			jsonNote.put("height", String.valueOf(noteInfo.getHeight()));
+			jsonNote.put("color", String.valueOf(noteInfo.getColor()));
+			jsonNoteArray.put(jsonNote);
+		}
+		objectToPrint.put("notes", jsonNoteArray);
+		try {
+			writer.write(objectToPrint.toString());
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+}

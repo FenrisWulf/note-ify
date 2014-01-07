@@ -1,0 +1,118 @@
+package postIt.model;
+
+import java.awt.Graphics;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import postIt.note.NoteInfo;
+
+public class PostItModel {
+	IPostItModelToControllerAdapter adapter;
+	private Dispatcher dispatcher;
+	private final String filename = "data.txt";
+
+	public PostItModel(IPostItModelToControllerAdapter adapter) {
+		this.adapter = adapter;
+		this.dispatcher = new Dispatcher();
+		start();
+	}
+
+	private void start() {
+	}
+
+	public ArrayList<NoteInfo> loadNotes() {
+		BufferedReader br = null;
+		StringBuilder input = new StringBuilder();
+		String st = null;
+
+		try {
+			br = new BufferedReader(new FileReader(filename));
+			try {
+				st = br.readLine();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		} catch (FileNotFoundException e) {
+			System.err.println("Filenot found");
+			st = null;
+		}
+
+		while (st != null) {
+			input.append(st);
+			try {
+				st = br.readLine();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		JSONObject parsedObject = new JSONObject(input.toString());
+		JSONArray noteJSONArray = parsedObject.getJSONArray("notes");
+		ArrayList<NoteInfo> loadedNotes = new ArrayList<NoteInfo>();
+		for (int i = 0; i < noteJSONArray.length(); i++) {
+			JSONObject noteJSON = noteJSONArray.getJSONObject(i);
+			loadedNotes.add(new NoteInfo(noteJSON.getString("text"), Integer
+					.parseInt(noteJSON.getString("x")), Integer
+					.parseInt(noteJSON.getString("y")), Integer
+					.parseInt(noteJSON.getString("width")), Integer
+					.parseInt(noteJSON.getString("height")), Integer
+					.parseInt(noteJSON.getString("color"))));
+		}
+		try {
+			br.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return loadedNotes;
+
+	}
+
+	public void createPostIt() {
+		NoteInfo newPostIt = new NoteInfo("abc", 300, 300, 300, 300, 300);
+		adapter.addPostIt(newPostIt);
+
+	}
+
+	public void update(Graphics g) {
+		dispatcher.notifyAll(g);
+	}
+
+	public void saveData(ArrayList<NoteInfo> postItInfoList) {
+		BufferedWriter writer = null;
+		try {
+			writer = new BufferedWriter(new FileWriter(filename));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		JSONObject objectToPrint = new JSONObject();
+		JSONArray jsonNoteArray = new JSONArray();
+		for (NoteInfo noteInfo : postItInfoList) {
+			JSONObject jsonNote = new JSONObject();
+			jsonNote.put("text", noteInfo.getText());
+			jsonNote.put("x", String.valueOf(noteInfo.getX()));
+			jsonNote.put("y", String.valueOf(noteInfo.getY()));
+			jsonNote.put("width", String.valueOf(noteInfo.getWidth()));
+			jsonNote.put("height", String.valueOf(noteInfo.getHeight()));
+			jsonNote.put("color", String.valueOf(noteInfo.getColor()));
+			jsonNoteArray.put(jsonNote);
+		}
+		objectToPrint.put("notes", jsonNoteArray);
+		try {
+			writer.write(objectToPrint.toString());
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+}

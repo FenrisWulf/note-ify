@@ -1,0 +1,23 @@
+Note-ify
+
+By David Nichol
+david@nichol.com
+
+What is it?
+
+This app helps people that need to write down notes on the fly.
+
+It quickly displays all written down notes, and allows the user to quickly look at these or create
+new notes of their own.
+
+All notes are saved when the app closes, and the quick start up time makes it easy to write down temporary information
+and have easy access back to it all.
+
+Controls
+Ctrl+n: Create a new note
+Ctrl+m: Close the app
+Alt+right: Change note color
+Alt+left: Change note color
+Right click: Close note
+
+I'd advise using Auto-hotkey or some other hotkey program to have quick access to the program.

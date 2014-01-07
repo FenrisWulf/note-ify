@@ -1,0 +1,77 @@
+package postIt.view;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.EventQueue;
+
+import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
+import javax.swing.JPanel;
+import javax.swing.JRootPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.border.EmptyBorder;
+
+public class Temp extends JFrame {
+
+	private JPanel contentPane;
+	private JTextField txtAbc;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					Temp frame = new Temp();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the frame.
+	 */
+	public Temp() {
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 100, 450, 300);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setLayout(new BorderLayout(0, 0));
+		setContentPane(contentPane);
+
+		JPanel panel_1 = new JPanel();
+		contentPane.add(panel_1, BorderLayout.CENTER);
+		panel_1.setLayout(null);
+
+		JPanel panel = new JPanel();
+		panel.setBounds(283, 91, 68, 67);
+		panel_1.add(panel);
+
+		txtAbc = new JTextField();
+		txtAbc.setText("abc");
+		panel.add(txtAbc);
+		txtAbc.setColumns(10);
+
+		JInternalFrame internalFrame = new JInternalFrame("New JInternalFrame");
+		internalFrame.putClientProperty("JInternalFrame.isPalette",
+				Boolean.TRUE);
+		internalFrame.getRootPane().setWindowDecorationStyle(JRootPane.NONE);
+		internalFrame.setResizable(true);
+		internalFrame.setBounds(42, 66, 110, 103);
+		panel_1.add(internalFrame);
+
+		JScrollPane scrollPane = new JScrollPane();
+		internalFrame.getContentPane().add(scrollPane, BorderLayout.CENTER);
+
+		JTextPane textPane = new JTextPane();
+		textPane.setBackground(Color.YELLOW);
+		scrollPane.setViewportView(textPane);
+		internalFrame.setVisible(true);
+	}
+}
